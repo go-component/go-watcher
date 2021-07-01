@@ -1,5 +1,13 @@
-# 一个款监控 Golang 代码变化自动重启的工具
 
-可用于任意 Golang 服务的执行
+`go-watcher`是一款实现 Golang 源码热重启的工具
 
-//TODO 待补充文档
+# 安装
+```html
+go get -u github.com/go-component/go-watcher
+```
+
+# 使用
+
+```html
+go-watcher {main.go}
+```
