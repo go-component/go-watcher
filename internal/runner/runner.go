@@ -14,6 +14,8 @@ import (
 	"time"
 )
 
+var ErrorRepeat = errors.New("repeat exec")
+
 type Runner struct {
 	goExecFilePath string
 
@@ -24,9 +26,11 @@ type Runner struct {
 	WorkPath       string
 
 	buildArgs []string
-	process   *os.Process
 
-	running int32
+	running  int32
+	procAttr *os.ProcAttr
+
+	process  atomic.Value
 }
 
 func execFilePathFormat(sourcePath string) string {
@@ -71,16 +75,17 @@ func NewRunner(args []string) (*Runner, error) {
 			execFilePath,
 			sourcePath,
 		},
+
+		procAttr: &os.ProcAttr{
+			Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
+		},
+
 	}, nil
 
 }
 
 func (r *Runner) build() error {
-	procAttr := &os.ProcAttr{
-		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
-	}
-
-	process, err := os.StartProcess(r.goExecFilePath, r.buildArgs, procAttr)
+	process, err := os.StartProcess(r.goExecFilePath, r.buildArgs, r.procAttr)
 
 	if err != nil {
 		return err
@@ -93,55 +98,71 @@ func (r *Runner) build() error {
 	return nil
 }
 
-func (r *Runner) Exec() error {
+func(r *Runner) start()(*os.Process, error){
 
 	if !atomic.CompareAndSwapInt32(&r.running, 0, 1) {
-		return nil
+		return nil, ErrorRepeat
 	}
 	defer atomic.CompareAndSwapInt32(&r.running, 1, 0)
+
+	r.Shutdown()
 
 	log.Println("starting server...")
 
 	err := r.build()
 
 	if err != nil {
+		return nil,err
+	}
+
+	process, err := os.StartProcess(r.execFilePath, r.execArgs, r.procAttr)
+
+	if err != nil {
+		return nil,err
+	}
+
+	r.process.Store(process)
+
+	return process,nil
+}
+
+func (r *Runner) Exec() error {
+
+	process, err := r.start()
+
+	if errors.Is(err, ErrorRepeat){
+		return nil
+	}
+
+	if err != nil{
 		return err
 	}
 
-	procAttr := &os.ProcAttr{
-		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
-	}
-
-	process, err := os.StartProcess(r.execFilePath, r.execArgs, procAttr)
-
+	_, err = process.Wait()
 	if err != nil {
 		return err
 	}
-	r.process = process
 
-	_, err = r.process.Wait()
-	if err != nil {
-		return err
-	}
-
-	r.process = nil
 	return nil
 }
 
 func (r *Runner) Cleanup() {
 	r.Shutdown()
-	os.Remove(r.execFilePath)
+	_ = os.Remove(r.execFilePath)
 }
 
 func (r *Runner) Shutdown() {
-	if r.process != nil {
-		_ = r.process.Signal(syscall.SIGTERM)
-		r.process = nil
-		log.Println("Closed server...")
+
+	process, ok := r.process.Load().(*os.Process)
+
+	if ok{
+		err := process.Signal(syscall.SIGTERM)
+		if err == nil{
+			log.Println("Closed server...")
+		}
 	}
 }
 
 func (r *Runner) Restart() error {
-	r.Shutdown()
 	return r.Exec()
 }
