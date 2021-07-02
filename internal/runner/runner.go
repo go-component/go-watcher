@@ -134,6 +134,7 @@ func (r *Runner) Restart() error {
 		if err != nil {
 			panic(err)
 		}
+		r.process = nil
 		log.Println("Closed server...")
 	}
 	return r.Exec()
