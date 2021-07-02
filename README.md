@@ -6,12 +6,23 @@
 go get -u github.com/go-component/go-watcher
 ```
 
+# 特点
+*   开箱即用，完美替代 `go run` 命令
+*   即时编译，底层基于原子操作避免频繁重启
+*   稳定性强，底层实现多信号量安全关闭
+
 # 使用
+
+与 `go run` 命令使用一致 
 
 ```html
 go-watcher {main.go}
 ```
 
-### TODO 更多细节持续优化中...
+例如携带命令行参数
+
+```html
+go-watcher {main.go} -f etc/config.yaml
+```
 
 路过的小伙伴们，可以的话，还烦请点个 star 哦，谢谢 ^ ^
