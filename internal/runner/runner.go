@@ -94,6 +94,8 @@ func (r *Runner) Exec() error {
 	if !atomic.CompareAndSwapInt32(&r.running, 0, 1){
 		return nil
 	}
+	defer atomic.CompareAndSwapInt32(&r.running, 1, 0)
+
 	log.Println("starting server...")
 
 	err := r.build()
@@ -119,7 +121,6 @@ func (r *Runner) Exec() error {
 	}
 
 	r.process = nil
-	atomic.CompareAndSwapInt32(&r.running, 1, 0)
 	return nil
 }
 
@@ -133,7 +134,7 @@ func (r *Runner) Restart() error {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("Closed server success...")
+		log.Println("Closed server...")
 	}
 	return r.Exec()
 }
