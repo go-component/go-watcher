@@ -29,9 +29,14 @@ type Runner struct {
 	running int32
 }
 
+func execFilePathFormat(sourcePath string) string {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return fmt.Sprintf("%s_%d", strings.TrimRight(filepath.Base(sourcePath), ".go"), rand.Int())
+}
+
 func NewRunner(args []string) (*Runner, error) {
 
-	if len(args) < 1{
+	if len(args) < 1 {
 		return nil, errors.New("command args at least one")
 	}
 
@@ -46,8 +51,7 @@ func NewRunner(args []string) (*Runner, error) {
 	}
 	workPath := filepath.Dir(sourcePath)
 
-	rand.Seed(time.Now().UTC().UnixNano())
-	execFilePath := fmt.Sprintf("%s_%d", strings.TrimRight(filepath.Base(sourcePath), ".go"), rand.Int())
+	execFilePath := execFilePathFormat(sourcePath)
 
 	return &Runner{
 		goExecFilePath: goExecFilePath,
@@ -91,7 +95,7 @@ func (r *Runner) build() error {
 
 func (r *Runner) Exec() error {
 
-	if !atomic.CompareAndSwapInt32(&r.running, 0, 1){
+	if !atomic.CompareAndSwapInt32(&r.running, 0, 1) {
 		return nil
 	}
 	defer atomic.CompareAndSwapInt32(&r.running, 1, 0)
@@ -129,7 +133,7 @@ func (r *Runner) Cleanup() {
 	os.Remove(r.execFilePath)
 }
 
-func (r * Runner) Shutdown() {
+func (r *Runner) Shutdown() {
 	if r.process != nil {
 		_ = r.process.Signal(syscall.SIGTERM)
 		r.process = nil
