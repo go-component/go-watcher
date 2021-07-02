@@ -125,17 +125,19 @@ func (r *Runner) Exec() error {
 }
 
 func (r *Runner) Cleanup() {
+	r.Shutdown()
 	os.Remove(r.execFilePath)
 }
 
-func (r *Runner) Restart() error {
+func (r * Runner) Shutdown() {
 	if r.process != nil {
-		err := r.process.Signal(syscall.SIGTERM)
-		if err != nil {
-			panic(err)
-		}
+		_ = r.process.Signal(syscall.SIGTERM)
 		r.process = nil
 		log.Println("Closed server...")
 	}
+}
+
+func (r *Runner) Restart() error {
+	r.Shutdown()
 	return r.Exec()
 }
