@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -8,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"syscall"
 	"time"
 )
@@ -23,9 +25,15 @@ type Runner struct {
 
 	buildArgs []string
 	process   *os.Process
+
+	running int32
 }
 
 func NewRunner(args []string) (*Runner, error) {
+
+	if len(args) < 1{
+		return nil, errors.New("command args at least one")
+	}
 
 	sourcePath, err := filepath.Abs(args[0])
 
@@ -83,6 +91,11 @@ func (r *Runner) build() error {
 
 func (r *Runner) Exec() error {
 
+	if !atomic.CompareAndSwapInt32(&r.running, 0, 1){
+		return nil
+	}
+	log.Println("starting server...")
+
 	err := r.build()
 
 	if err != nil {
@@ -106,7 +119,7 @@ func (r *Runner) Exec() error {
 	}
 
 	r.process = nil
-
+	atomic.CompareAndSwapInt32(&r.running, 1, 0)
 	return nil
 }
 
@@ -122,6 +135,5 @@ func (r *Runner) Restart() error {
 		}
 		log.Println("Closed server success...")
 	}
-	log.Println("starting server...")
 	return r.Exec()
 }
