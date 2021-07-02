@@ -122,6 +122,6 @@ func (r *Runner) Restart() error {
 		}
 		log.Println("Closed server success...")
 	}
-	log.Println("start server...")
+	log.Println("starting server...")
 	return r.Exec()
 }
