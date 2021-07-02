@@ -36,11 +36,7 @@ func(w *Watcher) Start() error{
 		for {
 			select {
 			case event, ok := <-watcher.Events:
-				if !ok {
-					return
-				}
-
-				if !strings.Contains(event.Name, ".go"){
+				if !ok || !strings.Contains(event.Name, ".go"){
 					continue
 				}
 
@@ -56,13 +52,13 @@ func(w *Watcher) Start() error{
 				if !ok {
 					return
 				}
-				log.Println("watcher error:", err)
+				panic(err)
 			}
 		}
 	}()
 	err = watcher.Add(w.runner.WorkPath)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	state := <-done
 
