@@ -11,3 +11,5 @@ go get -u github.com/go-component/go-watcher
 ```html
 go-watcher {main.go}
 ```
+
+### TODO 持续优化中...

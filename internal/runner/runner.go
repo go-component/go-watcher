@@ -93,7 +93,6 @@ func (r *Runner) Exec() error {
 		Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 	}
 
-	fmt.Println(r.execArgs)
 	process, err := os.StartProcess(r.execFilePath, r.execArgs, procAttr)
 
 	if err != nil {
@@ -121,8 +120,8 @@ func (r *Runner) Restart() error {
 		if err != nil {
 			panic(err)
 		}
-		log.Println("Close server success...")
+		log.Println("Closed server success...")
 	}
-	log.Println("Close server success...")
+	log.Println("start server...")
 	return r.Exec()
 }
