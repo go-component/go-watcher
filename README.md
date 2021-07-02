@@ -2,6 +2,11 @@
 
 `go-watcher` 是一款实现 Golang 源码热重启的工具，可替换 `go run` 命令执行任意 `main` 入口程序，包括参数
 
+# 限制
+```shell
+ Golang 版本 >= 1.13
+```
+
 # 安装
 ```html
 go get -u github.com/go-component/go-watcher
