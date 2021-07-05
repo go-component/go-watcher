@@ -14,7 +14,7 @@ go get -u github.com/go-component/go-watcher
 
 # Feature
 *  Out of the box, perfect replacement for `go run` command
-*  Just in time compilation, the underlying atomic operation to avoid frequent restarts
+*  Just in time restart, the underlying atomic operation to avoid frequent restarts
 *  Strong stability, the underlying to achieve the safety of multiple semaphore shutdown
 
 # Tutorial
