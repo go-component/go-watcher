@@ -25,6 +25,7 @@ func main() {
 	go func() {
 		err := r.Exec()
 		if err != nil {
+			r.Cleanup()
 			log.Fatal(err)
 		}
 	}()
@@ -32,6 +33,7 @@ func main() {
 	go func() {
 		err := w.Start()
 		if err != nil {
+			r.Cleanup()
 			log.Fatal(err)
 		}
 	}()
