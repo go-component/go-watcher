@@ -34,7 +34,9 @@ type Runner struct {
 }
 
 func execFilePathFormat(sourcePath string) string {
+
 	rand.Seed(time.Now().UTC().UnixNano())
+
 	return fmt.Sprintf("%s_%d", strings.TrimRight(filepath.Base(sourcePath), ".go"), rand.Int())
 }
 
@@ -49,10 +51,12 @@ func NewRunner(args []string) (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	goExecFilePath, err := exec.LookPath("go")
 	if err != nil {
 		return nil, err
 	}
+
 	workPath := filepath.Dir(sourcePath)
 
 	execFilePath := execFilePathFormat(sourcePath)
@@ -85,11 +89,13 @@ func NewRunner(args []string) (*Runner, error) {
 }
 
 func (r *Runner) build() error {
+
 	process, err := os.StartProcess(r.goExecFilePath, r.buildArgs, r.procAttr)
 
 	if err != nil {
 		return err
 	}
+
 	_, err = process.Wait()
 	if err != nil {
 		return err
@@ -110,13 +116,11 @@ func(r *Runner) start()(*os.Process, error){
 	log.Println("starting server...")
 
 	err := r.build()
-
 	if err != nil {
 		return nil,err
 	}
 
 	process, err := os.StartProcess(r.execFilePath, r.execArgs, r.procAttr)
-
 	if err != nil {
 		return nil,err
 	}
@@ -133,7 +137,6 @@ func (r *Runner) Exec() error {
 	if errors.Is(err, ErrorRepeat){
 		return nil
 	}
-
 	if err != nil{
 		return err
 	}
@@ -147,7 +150,9 @@ func (r *Runner) Exec() error {
 }
 
 func (r *Runner) Cleanup() {
+
 	r.Shutdown()
+
 	_ = os.Remove(r.execFilePath)
 }
 
@@ -164,5 +169,6 @@ func (r *Runner) Shutdown() {
 }
 
 func (r *Runner) Restart() error {
+
 	return r.Exec()
 }

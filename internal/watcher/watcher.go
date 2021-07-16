@@ -12,6 +12,7 @@ type Watcher struct {
 }
 
 func NewWatcher(runner *runner.Runner) *Watcher {
+
 	return &Watcher{runner: runner}
 }
 
@@ -23,19 +24,28 @@ func(w *Watcher) Start() error{
 	if err != nil {
 		return err
 	}
-	defer watcher.Close()
+
+	defer func(watcher *fsnotify.Watcher) {
+		err := watcher.Close()
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}(watcher)
 
 	done := make(chan interface{})
-	go func() {
 
+	go func() {
 
 		defer func() {
 			done <- recover()
 		}()
 
 		for {
+
 			select {
+
 			case event, ok := <-watcher.Events:
+
 				if !ok || !strings.Contains(event.Name, ".go"){
 					continue
 				}
@@ -48,14 +58,18 @@ func(w *Watcher) Start() error{
 						}
 					}()
 				}
+
 			case err, ok := <-watcher.Errors:
+
 				if !ok {
 					return
 				}
 				panic(err)
 			}
+
 		}
 	}()
+
 	err = watcher.Add(w.runner.WorkPath)
 	if err != nil {
 		return err
