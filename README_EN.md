@@ -17,6 +17,14 @@ go get -u github.com/go-component/go-watcher
 *  Just in time restart, the underlying atomic operation to avoid frequent restarts
 *  Strong stability, the underlying to achieve the safety of multiple semaphore shutdown
 
+# go-watcher commandline args
+
+```shell
+ -w string
+        path of watch, default exec path
+```
+
+
 # Tutorial
 
 The use same as  `go run` command

@@ -10,11 +10,16 @@ import (
 	"syscall"
 )
 
-func main() {
+var watchPath string
 
+func init(){
+	flag.StringVar(&watchPath,"w", "", "path of watch, default exec path")
+}
+
+func main() {
 	flag.Parse()
 
-	r, err := runner.NewRunner(flag.Args())
+	r, err := runner.NewRunner(flag.Args(), watchPath)
 	if err != nil {
 		log.Fatal(err)
 	}

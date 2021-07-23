@@ -17,6 +17,15 @@ go get -u github.com/go-component/go-watcher
 *   即时重启，底层基于原子操作避免频繁重启
 *   稳定性强，底层实现多信号量安全关闭
 
+# go-watcher 命令行参数
+
+```shell
+ -w string
+        path of watch, default exec path
+```
+
+- -w：需要监控的目录，默认为执行目录
+
 # 使用
 
 与 `go run` 命令使用一致 

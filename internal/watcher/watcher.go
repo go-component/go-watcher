@@ -3,7 +3,9 @@ package watcher
 import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/go-component/go-watcher/internal/runner"
+	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 )
 
@@ -16,9 +18,36 @@ func NewWatcher(runner *runner.Runner) *Watcher {
 	return &Watcher{runner: runner}
 }
 
+func registerWatchPath(dirPath string, callback func(path string) error) (err error) {
 
+	dir, err := ioutil.ReadDir(dirPath)
+	if err != nil {
+		return err
+	}
 
-func(w *Watcher) Start() error{
+	PathSep := string(os.PathSeparator)
+
+	for _, fi := range dir {
+
+		path := dirPath + PathSep + fi.Name()
+
+		if fi.IsDir() && !strings.HasPrefix(fi.Name(), ".") {
+			err = callback(path)
+			if err != nil {
+				return err
+			}
+
+			err = registerWatchPath(path, callback)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (w *Watcher) Start() error {
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -46,14 +75,14 @@ func(w *Watcher) Start() error{
 
 			case event, ok := <-watcher.Events:
 
-				if !ok || !strings.Contains(event.Name, ".go"){
+				if !ok || !strings.Contains(event.Name, ".go") {
 					continue
 				}
 
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					go func() {
 						err = w.runner.Restart()
-						if err != nil{
+						if err != nil {
 							log.Println(err)
 						}
 					}()
@@ -70,13 +99,26 @@ func(w *Watcher) Start() error{
 		}
 	}()
 
-	err = watcher.Add(w.runner.WorkPath)
+	err = watcher.Add(w.runner.WatchPath)
 	if err != nil {
 		return err
 	}
+
+	err = registerWatchPath(w.runner.WatchPath, func(path string) error {
+		err = watcher.Add(path)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
 	state := <-done
 
-	if err,ok := state.(error); ok{
+	if err, ok := state.(error); ok {
 		return err
 	}
 

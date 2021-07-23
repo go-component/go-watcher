@@ -18,6 +18,7 @@ var ErrorRepeat = errors.New("repeat exec")
 
 type Runner struct {
 	goExecFilePath string
+	WatchPath      string
 
 	execFilePath string
 	execArgs     []string
@@ -30,7 +31,7 @@ type Runner struct {
 	running  int32
 	procAttr *os.ProcAttr
 
-	process  atomic.Value
+	process atomic.Value
 }
 
 func execFilePathFormat(sourcePath string) string {
@@ -40,7 +41,7 @@ func execFilePathFormat(sourcePath string) string {
 	return fmt.Sprintf("%s_%d", strings.TrimRight(filepath.Base(sourcePath), ".go"), rand.Int())
 }
 
-func NewRunner(args []string) (*Runner, error) {
+func NewRunner(args []string, watchPath string) (*Runner, error) {
 
 	if len(args) < 1 {
 		return nil, errors.New("command args at least one")
@@ -61,6 +62,15 @@ func NewRunner(args []string) (*Runner, error) {
 
 	execFilePath := execFilePathFormat(sourcePath)
 
+	if watchPath == "" {
+		watchPath = workPath
+	}else{
+		watchPath, err = filepath.Abs(watchPath)
+		if err != nil{
+			return nil ,err
+		}
+	}
+
 	return &Runner{
 		goExecFilePath: goExecFilePath,
 
@@ -71,6 +81,7 @@ func NewRunner(args []string) (*Runner, error) {
 
 		sourceFilePath: sourcePath,
 		WorkPath:       workPath,
+		WatchPath:      watchPath,
 
 		buildArgs: []string{
 			"",
@@ -83,7 +94,6 @@ func NewRunner(args []string) (*Runner, error) {
 		procAttr: &os.ProcAttr{
 			Files: []*os.File{os.Stdin, os.Stdout, os.Stderr},
 		},
-
 	}, nil
 
 }
@@ -104,7 +114,7 @@ func (r *Runner) build() error {
 	return nil
 }
 
-func(r *Runner) start()(*os.Process, error){
+func (r *Runner) start() (*os.Process, error) {
 
 	if !atomic.CompareAndSwapInt32(&r.running, 0, 1) {
 		return nil, ErrorRepeat
@@ -117,27 +127,27 @@ func(r *Runner) start()(*os.Process, error){
 
 	err := r.build()
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	process, err := os.StartProcess(r.execFilePath, r.execArgs, r.procAttr)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
 	r.process.Store(process)
 
-	return process,nil
+	return process, nil
 }
 
 func (r *Runner) Exec() error {
 
 	process, err := r.start()
 
-	if errors.Is(err, ErrorRepeat){
+	if errors.Is(err, ErrorRepeat) {
 		return nil
 	}
-	if err != nil{
+	if err != nil {
 		return err
 	}
 
@@ -160,9 +170,9 @@ func (r *Runner) Shutdown() {
 
 	process, ok := r.process.Load().(*os.Process)
 
-	if ok{
+	if ok {
 		err := process.Signal(syscall.SIGTERM)
-		if err == nil{
+		if err == nil {
 			log.Println("Closed server...")
 		}
 	}
