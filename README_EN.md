@@ -1,7 +1,6 @@
 English | [简体中文](README.md)
 
-`go-watcher` is a hot restart tool of Golang code, can replace the `go run` command to execute any `main` entry programs, including parameters
-
+The `go-watcher` is a  tool of the Go programing language to restart automatically.
 # Requirement
 ```shell
  Golang version >= 1.13
