@@ -12,9 +12,9 @@ go get -u github.com/go-component/go-watcher
 ```
 
 # Feature
-*  Out of the box, it‘s replace the `go run` command well.
-*  restart quick, the principle is to avoid restart frequently by atomic operation.
-*  Strong stability, the underlying to achieve the safety of multiple semaphore shutdown.
+*  Out of the box, It‘s replace the `go run` command well.
+*  To restart quick, The principle is to avoid restart frequently by atomic operation.
+*  Stability, Use multiple semaphore to stop safely.
 
 # go-watcher commandline args
 
