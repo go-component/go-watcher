@@ -12,9 +12,9 @@ go get -u github.com/go-component/go-watcher
 ```
 
 # Feature
-*  Out of the box, perfect replacement for `go run` command
-*  Just in time restart, the underlying atomic operation to avoid frequent restarts
-*  Strong stability, the underlying to achieve the safety of multiple semaphore shutdown
+*  Out of the box, it‘s replace the `go run` command well.
+*  restart quick, the principle is to avoid restart frequently by atomic operation.
+*  Strong stability, the underlying to achieve the safety of multiple semaphore shutdown.
 
 # go-watcher commandline args
 
@@ -26,16 +26,16 @@ go get -u github.com/go-component/go-watcher
 
 # Tutorial
 
-The use same as  `go run` command
+Use the `go run` command to start.
 
 ```html
 go-watcher {main.go}
 ```
 
-For example, with command-line arguments
+For example
 
 ```html
 go-watcher {main.go} -f etc/config.yaml
 ```
 
-Please give a star if it's alright, thanks ^ ^
+Please give a star if it's alright, thanks!
