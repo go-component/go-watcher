@@ -12,7 +12,7 @@ go get -u github.com/go-component/go-watcher
 ```
 
 # Feature
-*  Out of the box, it‘s replace the `go run` command well.
+*  Out of the box, it can replace the `go run` command well.
 *  Using atomic operation make it to avoid to restart frequently.
 *  Stability, using multiple semaphore make it to stop safely.
 
